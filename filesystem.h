@@ -1,24 +1,23 @@
+// access mode for open_file() and create_file() 
+typedef enum {
+  READ_ONLY, READ_WRITE
+} FileMode;
 
 // main private file type
-typedef FileInternals {
-		FileMode mode,
-    char name[255],
-    int dir_block_index,
-    int inode_block_index,
-    int direct_pointers[10],
-    int indirect_pointer,
-    int double_indirect_pointer,
-    int is_open,
+typedef struct FileInternals {
+		FileMode mode;
+    char name[255];
+    int dir_block_index;
+    int inode_block_index;
+    int direct_pointers[10];
+    int indirect_pointer;
+    int double_indirect_pointer;
+    int is_open;
     // position buffer?
 } FileInternals;
 
 // file type used by user code
 typedef FileInternals* File;
-
-// access mode for open_file() and create_file() 
-typedef enum {
-	READ_ONLY, READ_WRITE
-} FileMode;
 
 // error codes set in global 'fserror' by filesystem functions
 typedef enum  {
