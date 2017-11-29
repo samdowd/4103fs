@@ -118,6 +118,29 @@ void fs_print_error(void){
 
 }
 
+// Set the bit at the k-th position in bitarray[i]
+void  set_bit(int bitarray[],  int k){
+	bitarray[k/32] |= 1 << (k%32);  
+}
+
+// Clear the bit at the k-th position in bitarray[i]
+void  clear_bit(int bitarray[],  int k){
+	bitarray[k/32] &= ~(1 << (k%32));
+}
+
+int get_empty_block_index(int bitarray[]) {
+	unsigned int i = 0;
+	while(i < 128 && 0xFFFFFFFF == bitarray[i]){
+		i++;
+	}
+	int int_with_zero = (int)(~((unsigned int)bitarray[i]));
+
+	if(ffs(int_with_zero) == 0)
+		return -1;
+	else
+		return i ? ffs(int_with_zero) + i*32 - 1 : ffs(int_with_zero) + i*32;
+}
+
 // filesystem error code set (set by each filesystem function)
 FSError fserror;
 
