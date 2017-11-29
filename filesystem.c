@@ -12,7 +12,8 @@
 // open existing file with pathname 'name' and access mode 'mode'.  Current file
 // position is set at byte 0.  Returns NULL on error. Always sets 'fserror' global.
 File open_file(char *name, FileMode mode) {
-
+	// check if file is closed - throw error
+	// change inode bit to open
 }
 
 // create and open new file with pathname 'name' and access mode 'mode'.  Current file
@@ -21,11 +22,14 @@ File create_file(char *name, FileMode mode){
 	// check dir bit vector for 0 - update it to 1
 	// check inode bit vector for 0 - update it to 1
 	// go to empty dir block - store name and empty inode block index
+	// call open_file()
 }
 
 // close 'file'.  Always sets 'fserror' global.
 void close_file(File file){
+	// check if file is open - throw error
 	// release memory for FileInternal?..
+	// change inode bit to closed
 }
 
 // read at most 'numbytes' of data from 'file' into 'buf', starting at the 

@@ -1,7 +1,15 @@
 
 // main private file type
 typedef FileInternals {
-		// private—you implement this
+		FileMode mode,
+    char name[255],
+    int dir_block_index,
+    int inode_block_index,
+    int direct_pointers[10],
+    int indirect_pointer,
+    int double_indirect_pointer,
+    int is_open,
+    // position buffer?
 } FileInternals;
 
 // file type used by user code
@@ -71,5 +79,3 @@ void fs_print_error(void);
 
 // filesystem error code set (set by each filesystem function)
 extern FSError fserror;
- 
-}
