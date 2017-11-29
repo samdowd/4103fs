@@ -18,12 +18,14 @@ File open_file(char *name, FileMode mode) {
 // create and open new file with pathname 'name' and access mode 'mode'.  Current file
 // position is set at byte 0.  Returns NULL on error. Always sets 'fserror' global.
 File create_file(char *name, FileMode mode){
-
+	// check dir bit vector for 0 - update it to 1
+	// check inode bit vector for 0 - update it to 1
+	// go to empty dir block - store name and empty inode block index
 }
 
 // close 'file'.  Always sets 'fserror' global.
 void close_file(File file){
-
+	// release memory for FileInternal?..
 }
 
 // read at most 'numbytes' of data from 'file' into 'buf', starting at the 
@@ -57,7 +59,9 @@ unsigned long file_length(File file){
 // Fails if the file is currently open. Returns 1 on success, 0 on failure. 
 // Always sets 'fserror' global.   
 int delete_file(char *name){
-
+	// check dir for name - get block number
+	// grab and reset dir bit vector for block number to 0
+	// reset inode bit vector for block grabbed to 0
 } 
 
 // determines if a file with 'name' exists and returns 1 if it exists, otherwise 0.
