@@ -19,21 +19,62 @@ FSError fserror;
 // } DirBlock;
 
 File lookup_file(char *name) {
-	char block[SOFTWARE_DISK_BLOCK_SIZE];
+	char buf[SOFTWARE_DISK_BLOCK_SIZE];
 
-	read_sd_block(block, 257);
+	char name_read_in[507];
+	int current_index;
+	for(current_index = 1; current_index <= 128; current_index++){
+		read_sd_block(buf, current_index);
+
+  	memcpy(name_read_in, buf, 507);
+
+  	if(strcmp(name, name_read_in) == 0)
+  		break;
+	}
+
+	char mode_read_in = buf[507];
+	char inode_index_read_in[5];
+  memcpy(inode_index_read_in, &buf[508], 4*sizeof(*buf));
+
+  int inode_index;
+	sscanf(inode_index_read_in, "%d", &inode_index);
+
+	FileMode m = (mode_read_in == 'r') ? READ_ONLY : READ_WRITE;
 
 	File file;
-	// printf("returning empty file from lookup: %s\n\n\n", block);
+	file->mode = m;
+	memcpy(file->name, name_read_in, 507);
+	file->dir_block_index = current_index;
+	file->inode_block_index = inode_index;
+
+	char inode_buf[512];
+	read_sd_block(inode_buf, file->inode_block_index);
+
+	file->is_open = inode_buf[0];
+	// memcpy(file->direct_pointers, &inode_buf[1], 40*sizeof(*inode_buf));
+	// memcpy(file->indirect_pointer, &inode_buf[41], 1*sizeof(*inode_buf));
+	// memcpy(file->double_indirect_pointer, &inode_buf[42], 1*sizeof(*inode_buf));
 	return file;
 }
 
 // open existing file with pathname 'name' and access mode 'mode'.  Current file
 // position is set at byte 0.  Returns NULL on error. Always sets 'fserror' global.
 File open_file(char *name, FileMode mode) {
-	lookup_file(name);
-	// printf("lookup done for %s\n\n\n", name);
+	File file = lookup_file(name);
 	// check if file is closed - throw error
+
+	if(file->is_open == 'o'){
+		fserror = FS_FILE_OPEN;
+		return NULL;
+	}
+
+	file->is_open = 'o';
+	// char inode_buffer[512];
+	// read_sd_block(inode_buffer, file->inode_block_index);
+	// inode_buffer[0] = 'o';
+	// write_sd_block(inode_buffer, file->inode_block_index);
+
+	return file;
 	// change inode bit to open
 }
 
@@ -64,7 +105,6 @@ File create_file(char *name, FileMode mode){
 	write_sd_block(inode_bit_vector, 258);
 
 	// Write 512 byte buffer to the first empty directory block
-	// dir_buf = name [507 bytes], mode [1 byte], block index [1 byte]
 	char dir_buf[SOFTWARE_DISK_BLOCK_SIZE];
 
 	// write name to buffer
@@ -78,81 +118,16 @@ File create_file(char *name, FileMode mode){
 
 	// write index
 	char index[5];
-	sprintf(index,"%04d",file->dir_block_index);
+	sprintf(index,"%04d",file->inode_block_index);
 	for(int j=0; j<4; j++){
 		dir_buf[508+j] = index[j];
 	}
 
-	printf("Dir_buff:\n");
-
-	//print name
-	for (int j=0; j < 507; j++) {
-    printf("%c", dir_buf[j]);
-  }
-
-  //print mode
-  printf("%c", dir_buf[507]);
-
-	//print index
-	for (int j=0; j < 4; j++) {
-    printf("%c", dir_buf[508+j]);
-  }
-
-
 	// go to empty dir block - store name and empty inode block index
 	write_sd_block(dir_buf, file->dir_block_index);
 
-
-	char buf[SOFTWARE_DISK_BLOCK_SIZE];
-  read_sd_block(buf, file->dir_block_index);
-
-  printf("\n++++++++++++++++ read_sd_block response +++++++++++++++++\n");
-
-  for (int j=0; j < SOFTWARE_DISK_BLOCK_SIZE; j++) {
-    printf("%c", buf[j]);
-  }
-
-  char name_read_in[507];
-  for(int j=0; j < 507; j++){
-  	name_read_in[j] = buf[j];
-  	// printf("ours='%c' buf='%c'\n", name_read_in[j], buf[j]);
-  }
-
-  // memcpy(name_read_in, buf, 507);
-
-  char mode_read_in = buf[507];
-  
-  char index_read_in[5];
-  memcpy(index_read_in, &buf[508], 4*sizeof(*buf));
-
-
-
-
-  for(int x=0; x < 4; x++){
-  	index_read_in[x] = buf[508+x];
-  }
-
-  printf("\n++++++++++++++++ funky town +++++++++++++++++\n");
-  for (int j=0; j < 507; j++) {
-    printf("%c", name_read_in[j]);
-  }
-
-  printf("\n++++++++++++++++ Read to Variables +++++++++++++++++\n");
-
-
-  int index_as_int;
-	sscanf(index_read_in, "%d", &index_as_int);
-
-  //print name
-  for (int j=0; j < 507; j++) {
-    printf("%c", name_read_in[j]);
-  }
-
-  //print mode
-  printf("%c", mode_read_in);
-  
-  //print index
-  printf("%d\n", index_as_int);
+	char inode_buf[512] = {'c'};
+	write_sd_block(inode_buf, file->inode_block_index);
 
 	open_file(name, mode);
 }

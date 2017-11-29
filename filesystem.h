@@ -6,7 +6,7 @@ typedef enum {
 // main private file type
 typedef struct FileInternals {
 		FileMode mode;
-    char name[255];
+    char name[507];
     int dir_block_index;
     int inode_block_index;
     int direct_pointers[10];
