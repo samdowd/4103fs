@@ -12,12 +12,6 @@
 // file system error code set (set by each file system function).
 FSError fserror;
 
-// typedef struct DirBlock {
-// 	char buf[504];
-// 	int mode;
-// 	int inode;
-// } DirBlock;
-
 File lookup_file(char *name) {
 	char buf[SOFTWARE_DISK_BLOCK_SIZE];
 
@@ -134,9 +128,16 @@ File create_file(char *name, FileMode mode){
 
 // close 'file'.  Always sets 'fserror' global.
 void close_file(File file){
-	// check if file is open - throw error
-	// release memory for FileInternal?..
+
+	if(file->is_open == 'c'){
+		fserror = FS_FILE_NOT_OPEN;
+	}
+
 	// change inode bit to closed
+	char inode_buffer[512];
+	read_sd_block(inode_buffer, file->inode_block_index);
+	inode_buffer[0] = 'o';
+	write_sd_block(inode_buffer, file->inode_block_index);
 }
 
 // read at most 'numbytes' of data from 'file' into 'buf', starting at the 
