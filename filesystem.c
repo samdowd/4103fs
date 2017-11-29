@@ -68,20 +68,25 @@ File create_file(char *name, FileMode mode){
 	char dir_buf[SOFTWARE_DISK_BLOCK_SIZE];
 
 	memcpy(dir_buf, name, sizeof(name)-1);
-	for(int i = sizeof(name); i < 508; i++){
+	for(int i = sizeof(name); i < 507; i++){
 		dir_buf[i] = ' ';
 	}
 
-	dir_buf[508] = (mode == READ_ONLY) ? 'r' : 'w';
+	dir_buf[507] = (mode == READ_ONLY) ? 'r' : 'w';
 
 
 	//--------------Monstrosities ahead ----------------------
 
-	char index[4];
-	if(4 - strlen(file->dir_block_index+'0') == 3)
-		"000" + file->dir_block_index+'0'
+	char index[5];
+	sprintf(index,"%04d",file->dir_block_index);
 
-	dir_buf[509] = file->dir_block_index+'0';
+	for (int j=0; j < 4; j++) {
+    printf("%c", index[j]);
+  }
+
+	for(int j=0; j<4; j++){
+		dir_buf[508+j] = index[j];
+	}
 
 	// go to empty dir block - store name and empty inode block index
 	write_sd_block(dir_buf, file->dir_block_index);
@@ -97,23 +102,23 @@ File create_file(char *name, FileMode mode){
 	char buf[SOFTWARE_DISK_BLOCK_SIZE];
   read_sd_block(buf, file->dir_block_index);
 
-  char namey[508];
-  memcpy(namey, buf, 508);
+  char namey[507];
+  memcpy(namey, buf, 507);
 
   char m = buf[508];
   
   char ind[4];
   // memcpy(ind, &buf[509], 4*sizeof(*buf));
 
-  for(int x=509; x<=512; x++){
-  	ind[509-x]=buf[x];
+  for(int x=0; x < 4; x++){
+  	ind[508+x] = buf[x];
   }
 
   int indexy;
 
 	sscanf(ind, "%d", &indexy);
 
-  for (int j=0; j < 508; j++) {
+  for (int j=0; j < 507; j++) {
     printf("%c", namey[j]);
   }
   printf("%c", m);
