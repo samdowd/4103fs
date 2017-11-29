@@ -76,5 +76,11 @@ int file_exists(char *name);
 // error.
 void fs_print_error(void);
 
+void  set_bit(int bitarray[],  int k);
+
+void  clear_bit(int bitarray[],  int k);
+
+int get_empty_block_index(int bitarray[]);
+
 // filesystem error code set (set by each filesystem function)
 extern FSError fserror;
