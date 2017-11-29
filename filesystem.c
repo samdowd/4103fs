@@ -67,64 +67,92 @@ File create_file(char *name, FileMode mode){
 	// dir_buf = name [507 bytes], mode [1 byte], block index [1 byte]
 	char dir_buf[SOFTWARE_DISK_BLOCK_SIZE];
 
+	// write name to buffer
 	memcpy(dir_buf, name, sizeof(name)-1);
 	for(int i = sizeof(name); i < 507; i++){
 		dir_buf[i] = ' ';
 	}
 
+	// write mode
 	dir_buf[507] = (mode == READ_ONLY) ? 'r' : 'w';
 
-
-	//--------------Monstrosities ahead ----------------------
-
+	// write index
 	char index[5];
 	sprintf(index,"%04d",file->dir_block_index);
-
-	for (int j=0; j < 4; j++) {
-    printf("%c", index[j]);
-  }
-
 	for(int j=0; j<4; j++){
 		dir_buf[508+j] = index[j];
 	}
+
+	printf("Dir_buff:\n");
+
+	//print name
+	for (int j=0; j < 507; j++) {
+    printf("%c", dir_buf[j]);
+  }
+
+  //print mode
+  printf("%c", dir_buf[507]);
+
+	//print index
+	for (int j=0; j < 4; j++) {
+    printf("%c", dir_buf[508+j]);
+  }
+
 
 	// go to empty dir block - store name and empty inode block index
 	write_sd_block(dir_buf, file->dir_block_index);
 
 
-	// for (int j=0; j < 508; j++) {
- //    printf("%c", dir_buf[j]);
- //  }
-
-
-
-
 	char buf[SOFTWARE_DISK_BLOCK_SIZE];
   read_sd_block(buf, file->dir_block_index);
 
-  char namey[507];
-  memcpy(namey, buf, 507);
+  printf("\n++++++++++++++++ read_sd_block response +++++++++++++++++\n");
 
-  char m = buf[508];
+  for (int j=0; j < SOFTWARE_DISK_BLOCK_SIZE; j++) {
+    printf("%c", buf[j]);
+  }
+
+  char name_read_in[507];
+  for(int j=0; j < 507; j++){
+  	name_read_in[j] = buf[j];
+  	// printf("ours='%c' buf='%c'\n", name_read_in[j], buf[j]);
+  }
+
+  // memcpy(name_read_in, buf, 507);
+
+  char mode_read_in = buf[507];
   
-  char ind[4];
-  // memcpy(ind, &buf[509], 4*sizeof(*buf));
+  char index_read_in[5];
+  memcpy(index_read_in, &buf[508], 4*sizeof(*buf));
+
+
+
 
   for(int x=0; x < 4; x++){
-  	ind[508+x] = buf[x];
+  	index_read_in[x] = buf[508+x];
   }
 
-  int indexy;
-
-	sscanf(ind, "%d", &indexy);
-
+  printf("\n++++++++++++++++ funky town +++++++++++++++++\n");
   for (int j=0; j < 507; j++) {
-    printf("%c", namey[j]);
+    printf("%c", name_read_in[j]);
   }
-  printf("%c", m);
-  for (int w=0; w < 4; w++) {
-    printf("%c", ind[w]);
+
+  printf("\n++++++++++++++++ Read to Variables +++++++++++++++++\n");
+
+
+  int index_as_int;
+	sscanf(index_read_in, "%d", &index_as_int);
+
+  //print name
+  for (int j=0; j < 507; j++) {
+    printf("%c", name_read_in[j]);
   }
+
+  //print mode
+  printf("%c", mode_read_in);
+  
+  //print index
+  printf("%d\n", index_as_int);
 
 	open_file(name, mode);
 }
